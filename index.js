@@ -1,7 +1,9 @@
-import { createWalletClient, custom ,createPublicClient} from "https://esm.sh/viem";
+import { createWalletClient, custom, createPublicClient, defineChain, parseEther } from "https://esm.sh/viem";
+import { contractAddress, abi } from "./constant-js.js";
 
 const connectButton = document.getElementById("connectButton");
 const fundButton = document.getElementById("fundButton");
+const ethVlueInput = document.getElementById("ethAmount");
 
 let walletClient;
 let publicClient;
@@ -9,8 +11,8 @@ let publicClient;
 async function coonectFun() {
     if (window.ethereum !== "undefined") {
 
-       // connect to MetaMask
-       walletClient = createWalletClient({
+        // connect to MetaMask
+        walletClient = createWalletClient({
             transport: custom(window.ethereum),
         });
 
@@ -23,30 +25,58 @@ async function coonectFun() {
     }
 }
 
-const fundFun=()=>{
-    if(window.ethereum !== "undefined") {
+const fundFun = async () => {
+    if (window.ethereum !== "undefined") {
 
         // connect to MetaMask 
-        walletClient=createWalletClient({
+        walletClient = createWalletClient({
             transport: custom(window.ethereum)
         })
-        walletClient.requestAddresses()
+        const [connectedAccount] = await walletClient.requestAddresses()
+        const currentChain = await getCurrentChain(walletClient);
+        const ethValue = ethVlueInput.value;
 
-       publicClient=createPublicClient({
+        publicClient = createPublicClient({
             transport: custom(window.ethereum)
-       })
+        })
 
-       publicClient.simulateContract({
-           
-       })
+        publicClient.simulateContract({
+            address: contractAddress,
+            abi: abi,
+            functionName: "fund",
+            account: connectedAccount,
+            chain: currentChain,
+            value: parseEther(ethValue),
+
+        })
 
 
     }
-    else{
+    else {
         fundButton.innerHTML = "Please install MetaMask!";
     }
 }
 
+async function getCurrentChain(client) {
+    const chainId = await client.getChainId()
+    const currentChain = defineChain({
+        id: chainId,
+        name: "Custom Chain",
+        nativeCurrency: {
+            name: "Ether",
+            symbol: "ETH",
+            decimals: 18,
+        },
+        rpcUrls: {
+            default: {
+                http: ["http://localhost:8545"],
+            },
+        },
+    })
+    return currentChain
+}
+
+
 connectButton.onclick = coonectFun;
 
-fundButton.onclick=fundFun
+fundButton.onclick = fundFun
