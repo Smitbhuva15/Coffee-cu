@@ -10,6 +10,7 @@ const connectButton = document.getElementById("connectButton");
 const fundButton = document.getElementById("fundButton");
 const ethValueInput = document.getElementById("ethAmount");
 const balanceButton = document.getElementById("balanceButton");
+const withdrawButton = document.getElementById("withdrawButton");
 
 
 let walletClient;
@@ -72,6 +73,34 @@ const fundFun = async () => {
     }
 }
 
+async function withdrawFun() {
+    walletClient = createWalletClient({
+        transport: custom(window.ethereum)
+    })
+
+    const [connectedAccount] = await walletClient.requestAddresses()
+
+    const currentChain = await getCurrentChain(walletClient);
+
+
+    publicClient = createPublicClient({
+        transport: custom(window.ethereum)
+    });
+
+    const { request } = await publicClient.simulateContract({
+        address: contractAddress,
+        abi: abi,
+        functionName: "withdraw",
+        account: connectedAccount,
+        chain: currentChain,
+
+    })
+
+    const hash = await walletClient.writeContract(request);
+    console.log("withdraw Transaction Hash:", hash);
+
+}
+
 async function getCurrentChain(client) {
     const chainId = await client.getChainId()
     const currentChain = defineChain({
@@ -100,7 +129,7 @@ const getFundMeBalance = async () => {
             address: contractAddress,
 
         })
-        console.log("Balance:",formatEther(balance));
+        console.log("Balance:", formatEther(balance));
 
     }
     else {
@@ -115,3 +144,5 @@ connectButton.onclick = coonectFun;
 fundButton.onclick = fundFun
 
 balanceButton.onclick = getFundMeBalance;
+
+withdrawButton.onclick = withdrawFun;
