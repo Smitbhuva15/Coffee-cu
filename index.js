@@ -2,12 +2,15 @@ import {
     createWalletClient, custom, parseEther,
     defineChain,
     createPublicClient,
+    formatEther
 } from "https://esm.sh/viem";
 import { contractAddress, abi } from "./constant-js.js";
 
 const connectButton = document.getElementById("connectButton");
 const fundButton = document.getElementById("fundButton");
 const ethValueInput = document.getElementById("ethAmount");
+const balanceButton = document.getElementById("balanceButton");
+
 
 let walletClient;
 let publicClient;
@@ -45,21 +48,21 @@ const fundFun = async () => {
         })
 
         // call the fund function of the contract
-     try {
-    const { request } = await publicClient.simulateContract({
-        address: contractAddress,
-        abi: abi,
-        functionName: "fund",
-        account: connectedAccount,
-        chain: currentChain,
-        value: parseEther(ethValue),
-    });
-    const hash = await walletClient.writeContract(request);
-    console.log("Transaction Hash:", hash);
-} catch (error) {
-    console.error("Transaction Failed:", error.message || error);
-    fundButton.innerHTML = "Transaction Failed";
-}
+        try {
+            const { request } = await publicClient.simulateContract({
+                address: contractAddress,
+                abi: abi,
+                functionName: "fund",
+                account: connectedAccount,
+                chain: currentChain,
+                value: parseEther(ethValue),
+            });
+            const hash = await walletClient.writeContract(request);
+            console.log("Transaction Hash:", hash);
+        } catch (error) {
+            console.error("Transaction Failed:", error.message || error);
+            fundButton.innerHTML = "Transaction Failed";
+        }
 
 
 
@@ -88,7 +91,27 @@ async function getCurrentChain(client) {
     return currentChain
 }
 
+const getFundMeBalance = async () => {
+    if (window.ethereum !== "undefined") {
+        publicClient = createPublicClient({
+            transport: custom(window.ethereum)
+        })
+        const balance = await publicClient.getBalance({
+            address: contractAddress,
+
+        })
+        console.log("Balance:",formatEther(balance));
+
+    }
+    else {
+        balanceButton.innerHTML = "Please install MetaMask!";
+    }
+}
+
+
 
 connectButton.onclick = coonectFun;
 
 fundButton.onclick = fundFun
+
+balanceButton.onclick = getFundMeBalance;
