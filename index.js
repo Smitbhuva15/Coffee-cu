@@ -11,6 +11,7 @@ const fundButton = document.getElementById("fundButton");
 const ethValueInput = document.getElementById("ethAmount");
 const balanceButton = document.getElementById("balanceButton");
 const withdrawButton = document.getElementById("withdrawButton");
+const getBalanceButton = document.getElementById("getBalanceButton");
 
 
 let walletClient;
@@ -137,6 +138,36 @@ const getFundMeBalance = async () => {
     }
 }
 
+async function getBalanceFun() {
+    if(window.ethereum !== "undefined") {
+
+        walletClient=createWalletClient({
+            transport:custom(window.ethereum)
+        })
+
+     const [connectedAccount]= await   walletClient.requestAddresses()
+
+     publicClient=createPublicClient({
+        transport:custom(window.ethereum)
+     })
+
+
+     const AmountFunded=await publicClient.readContract({
+        address: contractAddress,
+        abi: abi,
+        functionName: " getAddressToAmountFunded",
+        args: [connectedAccount],
+     })
+
+     console.log("Your Balance:", formatEther(AmountFunded));
+    }
+    else{
+        getBalanceButton.innerHTML = "Please install MetaMask!";
+    }
+  
+    
+}
+
 
 
 connectButton.onclick = coonectFun;
@@ -146,3 +177,5 @@ fundButton.onclick = fundFun
 balanceButton.onclick = getFundMeBalance;
 
 withdrawButton.onclick = withdrawFun;
+
+getBalanceButton.onclick=getBalanceFun;
