@@ -1,4 +1,4 @@
-# ☕ Coffee-Cu: A Blockchain-Powered Tipping Web App ☕
+# ☕ Coffee-Cu: A Blockchain-Powered Tipping Web App 
 
 ### Coffee-Cu is a full-stack decentralized web application that allows users to support creators or developers by sending them small Amount of ETH  — just like "buying a coffee."
 
